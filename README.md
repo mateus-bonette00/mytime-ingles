@@ -480,4 +480,4 @@ Este projeto está sob a licença MIT.
 
 ---
 
-**Desenvolvido com ❤️ por Claude Code**
+**Desenvolvido com ❤️ por Mateus Bonette**
