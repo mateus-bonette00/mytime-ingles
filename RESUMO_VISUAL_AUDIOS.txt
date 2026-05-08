@@ -1,0 +1,367 @@
+================================================================================
+                 RESUMO VISUAL - SISTEMA DE AUDIOS
+                        MyTime Inglês
+================================================================================
+
+1. ESTRUTURA GERAL
+================================================================================
+
+   /home/mateus/Documentos/Projetos/mytime-ingles/
+   ├── audios/                          [4.9 MB - 50 arquivos]
+   │   ├── 1.m4a.mp4 ... 25.m4a.mp4    [25 áudios principais]
+   │   └── 1b.m4a.mp4 ... 25b.m4a.mp4  [25 variações "b"]
+   ├── backend/
+   │   ├── src/models/Phrase.js         [Gerencia audio_url]
+   │   ├── src/routes/
+   │   │   ├── progress.js              [GET /phrases/:phraseNumber]
+   │   │   └── admin.js                 [POST/PUT/DELETE /phrases]
+   │   └── src/controllers/
+   │       ├── progressController.js    [getPhraseByNumber()]
+   │       └── adminController.js       [createPhrase/updatePhrase()]
+   ├── frontend/
+   │   └── src/pages/
+   │       ├── LessonPage.jsx           [REPRODUTOR DE ÁUDIO]
+   │       ├── LessonPage.css           [Estilos de áudio]
+   │       └── StudentDashboard.jsx     [Acesso às lições]
+   └── database/
+       └── schema.sql                   [Tabela phrases + seed data]
+
+================================================================================
+
+2. FLUXO DE DADOS
+================================================================================
+
+   BANCO DE DADOS                    API BACKEND              FRONTEND REACT
+   ==================                ================         ==============
+
+   TABLE: phrases                    GET /api/progress/       LessonPage.jsx
+   ├── id                            phrases/:phraseNumber    ├── audioRef
+   ├── phrase_number                 │                        ├── playing
+   ├── text_en                       │ Retorna:              ├── currentTime
+   ├── text_pt                       │ {                      ├── duration
+   ├── audio_url <──────────────────→  phrase: {            │
+   ├── duration_seconds              │    audio_url: "    │ handlePlayPause()
+   ├── category                      │    /audios/1...",  │ handleTimeUpdate()
+   └── ...                           │    ...             │ handleSeek()
+                                     │  }                 │ handleRepeat()
+                                     │}                   │
+                                     │ <audio
+                                     │  ref={audioRef}
+                                     │  src={phrase.audio_url}
+                                     │  onTimeUpdate={...}
+                                     │  onLoadedMetadata={...}
+                                     │  onEnded={...}
+                                     └──→ />
+
+   Arquivo de Áudio no Servidor
+   ↑
+   │ GET /audios/1.m4a.mp4
+   │
+   └── /audios/1.m4a.mp4 (arquivo estático)
+
+================================================================================
+
+3. COMPONENTES PRINCIPAIS
+================================================================================
+
+   LessonPage.jsx (Reprodutor Principal)
+   ────────────────────────────────────
+
+   Estado (Hooks)
+   ├── phrase          : { audio_url, text_en, text_pt, ... }
+   ├── playing         : boolean
+   ├── currentTime     : número (segundos)
+   ├── duration        : número (segundos)
+   ├── loading         : boolean
+   └── audioRef        : useRef → <audio>
+
+   Funções Principais
+   ├── fetchPhrase()         → GET /api/progress/phrases/:phraseNumber
+   ├── handlePlayPause()     → audioRef.current?.play/pause()
+   ├── handleTimeUpdate()    → onTimeUpdate listener
+   ├── handleLoadedMetadata() → onLoadedMetadata listener
+   ├── handleSeek()          → navega no áudio via barra
+   └── handleRepeat()        → reinicia o áudio
+
+   Elemento Crítico
+   └── <audio ref={audioRef} src={phrase.audio_url} ... />
+
+   Controles na Interface
+   ├── ▶️/⏸️ Play/Pause Button (60x60px, round)
+   ├── Progress Bar [████░░░░░░░░░░░░]
+   ├── Time Display "0:45 / 3:15"
+   ├── ◄◄ Previous Button
+   ├── 🔁 Repeat Button
+   ├── Pular ►► Button
+   └── ☑ Marcar como estudada
+
+================================================================================
+
+4. ENDPOINTS DA API
+================================================================================
+
+   PROGRESS ROUTES (Requer Autenticação)
+   ────────────────────────────────────
+
+   GET /api/progress
+   └─ Retorna: { stats, progress }
+
+   GET /api/progress/phrases
+   └─ Retorna: { phrases: [...] } com todos os audio_url
+
+   GET /api/progress/phrases/:phraseNumber  <── USADO PELO LESSONPAGE
+   └─ Retorna: { phrase: { audio_url, ... } }
+
+   POST /api/progress/phrases/:phraseNumber/complete
+   └─ Marca frase como concluída
+
+   POST /api/progress/phrases/:phraseNumber/incomplete
+   └─ Marca frase como não concluída
+
+
+   ADMIN ROUTES (Requer Autenticação + Admin)
+   ──────────────────────────────────────────
+
+   POST /api/admin/phrases
+   └─ Recebe: { phrase_number, text_en, text_pt, audio_url, ... }
+
+   PUT /api/admin/phrases/:phraseNumber
+   └─ Atualiza: audio_url, text_en, text_pt, category, ...
+
+   DELETE /api/admin/phrases/:phraseNumber
+   └─ Remove frase e referência de áudio
+
+   POST /api/admin/phrases/bulk
+   └─ Importa múltiplas frases com audio_url em lote
+
+================================================================================
+
+5. PADRÃO DE REFERÊNCIA
+================================================================================
+
+   BANCO DE DADOS
+   ───────────────
+   audio_url: VARCHAR(500)
+   Exemplo: "/audios/1.m4a.mp4"
+
+   ARQUIVO REAL
+   ────────────
+   /home/mateus/.../audios/1.m4a.mp4
+   Extensão: .m4a.mp4
+   Tamanho: ~100-150 KB cada
+
+   PROBLEMA IDENTIFICADO
+   ────────────────────
+   Schema.sql (Seed Data - LINHAS 179-190):
+   └─ Referencia: "/audios/phrase_01.mp3"
+   
+   Realidade (Arquivos no Disco):
+   └─ São: "/audios/1.m4a.mp4"
+
+   STATUS: INCOMPATÍVEL - CRÍTICO
+
+================================================================================
+
+6. QUANTIDADE E DISTRIBUIÇÃO
+================================================================================
+
+   TOTAL: 50 ÁUDIOS (4.9 MB)
+
+   GRUPO 1 - PRINCIPAIS (25 ÁUDIOS)
+   ┌────────────────────────────────┐
+   │ 1.m4a.mp4    → 11.m4a.mp4      │
+   │ 2.m4a.mp4    → 12.m4a.mp4      │
+   │ 3.m4a.mp4    → 13.m4a.mp4      │
+   │ 4.m4a.mp4    → 14.m4a.mp4      │
+   │ 5.m4a.mp4    → 15.m4a.mp4      │
+   │ 6.m4a.mp4    → 16.m4a.mp4      │
+   │ 7.m4a.mp4    → 17.m4a.mp4      │
+   │ 8.m4a.mp4    → 18.m4a.mp4      │
+   │ 9.m4a.mp4    → 19.m4a.mp4      │
+   │ 10.m4a.mp4   → 20-25.m4a.mp4   │
+   └────────────────────────────────┘
+
+   GRUPO 2 - VARIAÇÕES "B" (25 ÁUDIOS)
+   ┌────────────────────────────────┐
+   │ 1b.m4a.mp4   → 11b.m4a.mp4     │
+   │ 2b.m4a.mp4   → 12b.m4a.mp4     │
+   │ 3b.m4a.mp4   → 13b.m4a.mp4     │
+   │ 4b.m4a.mp4   → 14 b.m4a.mp4 *  │
+   │ 5b.m4a.mp4   → 15 b.m4a.mp4 *  │
+   │ 6b.m4a.mp4   → 16b.m4a.mp4     │
+   │ 7b.m4a.mp4   → 17 b.m4a.mp4 *  │
+   │ 8b.m4a.mp4   → 18b.m4a.mp4     │
+   │ 9b.m4a.mp4   → 19b.m4a.mp4     │
+   │ 10b.m4a.mp4  → 20-25b.m4a.mp4  │
+   └────────────────────────────────┘
+   * = Arquivos com espaços no nome (inconsistência)
+
+================================================================================
+
+7. PROBLEMAS CRÍTICOS
+================================================================================
+
+   [!] PROBLEMA 1: Incompatibilidade de Formato
+   ─────────────────────────────────────────────
+   Schema referencia:  "/audios/phrase_01.mp3"
+   Arquivos reais:    "/audios/1.m4a.mp4"
+   Impacto:           CRÍTICO - Seed data não funciona
+   Solução:           Atualizar schema.sql linhas 179-190
+
+
+   [!] PROBLEMA 2: Nomes Inconsistentes
+   ─────────────────────────────────────
+   Arquivos com espaço: "14 b.m4a.mp4", "15 b.m4a.mp4", "17 b.m4a.mp4"
+   Padrão esperado:     "14b.m4a.mp4", "15b.m4a.mp4", "17b.m4a.mp4"
+   Impacto:             MÉDIO - Erro potencial ao referenciar
+   Solução:             Renomear 3 arquivos
+
+
+   [!] PROBLEMA 3: Significado Obscuro das Variações "b"
+   ──────────────────────────────────────────────────────
+   Pergunta:  Por que 25 áudios "b"?
+   Hipótese:  - Diferentes locutores (nativo vs aluno)?
+              - Diferentes velocidades (rápido vs lento)?
+   Impacto:   BAIXO - Falta de documentação
+   Solução:   Documentar propósito das variações
+
+
+   [!] PROBLEMA 4: Falta de Validação
+   ──────────────────────────────────
+   Situação:  Não há validação se arquivo existe
+   Risco:     URLs inválidas podem ser salvas no BD
+   Impacto:   MÉDIO - Erros em produção
+   Solução:   Implementar validação de audio_url
+
+================================================================================
+
+8. CHECKLIST RÁPIDO
+================================================================================
+
+   ONDE ESTÃO OS ARQUIVOS?
+   ├─ [✓] /audios/ contém 50 arquivos
+   ├─ [✓] Tamanho total: 4.9 MB
+   ├─ [✓] Extensão: .m4a.mp4
+   └─ [✓] 25 principais + 25 variações "b"
+
+   COMO SÃO USADOS?
+   ├─ [✓] Banco de dados: tabela "phrases", campo "audio_url"
+   ├─ [✓] Backend: API REST via endpoints /api/progress
+   ├─ [✓] Frontend: Reprodutor HTML5 <audio>
+   └─ [✓] Fluxo: DB → API → React → <audio> → arquivo
+
+   QUAIS COMPONENTES USAM?
+   ├─ [✓] LessonPage.jsx (principal - reprodutor)
+   ├─ [✓] StudentDashboard.jsx (acesso indireto)
+   ├─ [✓] LessonPage.css (estilos)
+   └─ [✓] progressController.js (fornece dados)
+
+   COMO SÃO REFERENCIADOS?
+   ├─ [✓] Campo: audio_url
+   ├─ [✓] Padrão: /audios/{número}.m4a.mp4
+   ├─ [✓] Problema: Schema refencia .mp3 (CRÍTICO)
+   └─ [✓] 3 arquivos com nomes inconsistentes
+
+   QUANTOS ÁUDIOS?
+   ├─ [✓] Total: 50 áudios
+   ├─ [✓] Grupo 1: 25 principais (1-25)
+   ├─ [✓] Grupo 2: 25 variações (1b-25b)
+   └─ [✓] Tamanho: 4.9 MB
+
+================================================================================
+
+9. PRÓXIMOS PASSOS
+================================================================================
+
+   IMEDIATO (Hoje)
+   ───────────────
+   1. Sincronizar schema.sql com nomes reais (CRÍTICO)
+   2. Renomear 3 arquivos com espaços
+   3. Implementar validação de audio_url
+
+   CURTO PRAZO (Esta semana)
+   ─────────────────────────
+   4. Documentar propósito das variações "b"
+   5. Testar seed data no BD
+   6. Verificar links em produção
+
+   MÉDIO PRAZO (Este mês)
+   ─────────────────────
+   7. Considerar cloud storage (S3, GCS)
+   8. Implementar CDN para melhor performance
+   9. Adicionar suporte a múltiplos formatos
+
+   LONGO PRAZO (Futuro)
+   ───────────────────
+   10. Admin panel visual para gerenciar áudios
+   11. Suporte a múltiplas línguas
+   12. Sistema de transcrição automática
+
+================================================================================
+
+10. DOCUMENTAÇÃO GERADA
+================================================================================
+
+   Esta auditoria criou 5 arquivos de documentação:
+
+   1. INDEX_AUDITORIA_AUDIOS.md        ← COMECE AQUI
+      └─ Índice com guia de navegação
+
+   2. SUMARIO_AUDIOS.txt               ← 5 MINUTOS
+      └─ Visão geral rápida
+
+   3. DIAGRAMA_FLUXO_AUDIOS.txt        ← 15 MINUTOS
+      └─ Diagramas e arquitetura
+
+   4. RELATORIO_SISTEMA_AUDIOS.md      ← 30 MINUTOS
+      └─ Relatório completo
+
+   5. ARQUIVOS_AFETADOS_AUDIOS.md      ← DETALHES TÉCNICOS
+      └─ Mapeamento de arquivos
+
+================================================================================
+
+11. INFORMAÇÕES TÉCNICAS
+================================================================================
+
+   STACK TECNOLÓGICO
+   ─────────────────
+   Banco de Dados:     PostgreSQL
+   Backend:            Node.js/Express
+   Frontend:           React (Vite)
+   Reprodução:         HTML5 <audio> tag
+   Armazenamento:      Filesystem (servidor estático)
+   Formato de Áudio:   M4A (.m4a.mp4)
+
+   ENDPOINTS CHAVE
+   ───────────────
+   GET /api/progress/phrases/:phraseNumber
+   └─ Retorna phrase com audio_url para LessonPage
+
+   POST /api/admin/phrases
+   PUT /api/admin/phrases/:phraseNumber
+   DELETE /api/admin/phrases/:phraseNumber
+   POST /api/admin/phrases/bulk
+   └─ Endpoints de administração
+
+   CAMPOS CRÍTICOS
+   ───────────────
+   DB: phrases.audio_url (VARCHAR 500)
+   API: phrase.audio_url (string)
+   React: phrase.audio_url (usado em <audio src="">)
+
+================================================================================
+
+12. RESUMO EM UMA LINHA
+================================================================================
+
+   O MyTime Inglês armazena 50 áudios (.m4a.mp4) em /audios/, referenciados
+   em banco de dados (PostgreSQL), fornecidos via API (Express), reproduzidos
+   em React (LessonPage) com controles HTML5, mas o schema.sql ainda refencia
+   .mp3 antigos - NECESSÁRIO SINCRONIZAR COM URGÊNCIA.
+
+================================================================================
+
+Gerado em: 05 de Fevereiro de 2026
+Versão: 1.0
+Status: Auditoria Completa

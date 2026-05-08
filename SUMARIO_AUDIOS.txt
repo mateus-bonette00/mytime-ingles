@@ -1,0 +1,111 @@
+================================================================================
+           SUMÁRIO EXECUTIVO - SISTEMA DE ÁUDIOS - MyTime Inglês
+================================================================================
+
+1. LOCALIZAÇÃO DOS ARQUIVOS DE ÁUDIO
+   Local: /home/mateus/Documentos/Projetos/mytime-ingles/audios/
+   Tamanho Total: 4.9 MB
+   Quantidade: 50 arquivos (.m4a.mp4)
+
+2. COMO SÃO USADOS OS ÁUDIOS
+   - Banco de Dados: Tabela "phrases" com campo "audio_url"
+   - Backend: API REST que retorna audio_url para cada frase
+   - Frontend: Reprodutor HTML5 <audio> com controles customizados
+   - Fluxo: DB → API → React Component → HTML5 Audio Tag → Arquivo
+
+3. PÁGINAS E COMPONENTES QUE USAM ÁUDIO
+   
+   FRONTEND (React):
+   ├─ LessonPage.jsx (Principal)
+   │  ├─ Reproduz áudio com controles (Play/Pause, Progress, Tempo)
+   │  ├─ Utiliza audioRef (useRef)
+   │  ├─ Estados: playing, currentTime, duration
+   │  └─ Eventos: onTimeUpdate, onLoadedMetadata, onEnded
+   ├─ LessonPage.css (Estilos)
+   │  ├─ .audio-controls (container)
+   │  ├─ .play-btn (botão 60x60px)
+   │  ├─ .audio-progress (barra)
+   │  └─ .audio-time (display MM:SS)
+   └─ StudentDashboard.jsx (Acesso indireto)
+      └─ Link para LessonPage (onde áudio é reproduzido)
+
+   BACKEND (Node.js/Express):
+   ├─ Routes/progress.js
+   │  └─ GET /api/progress/phrases/:phraseNumber → retorna audio_url
+   ├─ Controllers/progressController.js
+   │  ├─ getPhraseByNumber() → frase com áudio
+   │  └─ getPhrasesWithProgress() → todas as frases
+   ├─ Routes/admin.js
+   │  ├─ POST /api/admin/phrases (criar com áudio)
+   │  ├─ PUT /api/admin/phrases/:phraseNumber (atualizar áudio)
+   │  ├─ DELETE /api/admin/phrases/:phraseNumber (deletar)
+   │  └─ POST /api/admin/phrases/bulk (criar em lote)
+   └─ Controllers/adminController.js
+      ├─ createPhrase() → recebe audio_url
+      ├─ updatePhrase() → atualiza audio_url
+      └─ createBulkPhrases() → importa múltiplos áudios
+
+4. PADRÕES DE REFERÊNCIA A ÁUDIO
+   - Campo de BD: audio_url (VARCHAR(500))
+   - Extensão dos arquivos: .m4a.mp4
+   - Padrão de nomes: {número}.m4a.mp4 ou {número}b.m4a.mp4
+   - Controles JS: play(), pause(), currentTime
+   - Estados React: playing, currentTime, duration
+   - Caminho URL esperado: /audios/[nome-arquivo].m4a.mp4
+
+5. QUANTIDADE DE ÁUDIOS
+   
+   TOTAL: 50 ARQUIVOS
+   
+   Grupo 1 - Áudios Principais (25 arquivos):
+      1.m4a.mp4, 2.m4a.mp4, 3.m4a.mp4, ... 25.m4a.mp4
+   
+   Grupo 2 - Áudios "b"/Variações (25 arquivos):
+      1b.m4a.mp4, 2b.m4a.mp4, 3b.m4a.mp4, ... 25b.m4a.mp4
+   
+   Nota: 3 arquivos têm nomes com espaço (14 b, 15 b, 17 b)
+
+PROBLEMAS CRÍTICOS IDENTIFICADOS:
+   
+   1. Incompatibilidade de Formato (CRÍTICO)
+      - Schema SQL referencia .mp3 (/audios/phrase_01.mp3)
+      - Arquivos reais são .m4a.mp4
+      - Seed data não funcionará com nomes de arquivo reais
+   
+   2. Nomes de Arquivos Inconsistentes
+      - Arquivos com espaços: "14 b.m4a.mp4", "15 b.m4a.mp4", "17 b.m4a.mp4"
+      - Demais sem espaço: "1b.m4a.mp4", "2b.m4a.mp4", etc.
+      - Risco de erro ao tentar referenciar
+   
+   3. Significado Obscuro das Variações "b"
+      - Possível: dois locutores (nativo vs. aprendiz)
+      - Possível: duas velocidades (rápido vs. lento)
+      - Falta: documentação do propósito
+   
+   4. Sem Validação de URL
+      - Campo audio_url não valida se arquivo existe
+      - Risco: URLs inválidas podem ser salvas
+
+RECOMENDAÇÕES:
+   
+   IMEDIATAS:
+   1. Sincronizar nomes de arquivos no schema.sql com arquivos reais
+   2. Renomear arquivos com espaços para padrão sem espaço
+   3. Documentar o propósito das variações "b"
+   4. Implementar validação de audio_url na API
+   
+   FUTURO:
+   1. Considerar cloud storage para áudios (S3, etc.)
+   2. Implementar CDN para melhor performance
+   3. Adicionar suporte a múltiplos formatos de áudio
+   4. Criar admin panel visual para gerenciar áudios
+
+ARQUIVOS IMPORTANTES:
+   - Banco de Dados: /database/schema.sql (linhas 179-190)
+   - Modelo: /backend/src/models/Phrase.js
+   - Routes: /backend/src/routes/progress.js, admin.js
+   - Controllers: /backend/src/controllers/progressController.js, adminController.js
+   - Frontend: /frontend/src/pages/LessonPage.jsx, LessonPage.css
+   - Áudios: /audios/ (50 arquivos, 4.9 MB)
+
+================================================================================

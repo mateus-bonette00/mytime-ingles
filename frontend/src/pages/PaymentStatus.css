@@ -1,0 +1,290 @@
+.payment-status-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4ff 0%, #fff5f5 100%);
+  padding: var(--space-8) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-status-container {
+  max-width: 700px;
+  width: 100%;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12);
+  box-shadow: var(--shadow-2xl);
+  text-align: center;
+}
+
+.status-icon {
+  margin: 0 auto var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.status-icon.success svg circle {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.payment-status-container h1 {
+  font-size: var(--text-4xl);
+  margin-bottom: var(--space-4);
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: var(--font-extrabold);
+}
+
+.status-subtitle {
+  font-size: var(--text-xl);
+  color: var(--gray-600);
+  margin-bottom: var(--space-8);
+}
+
+.status-card {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  margin: var(--space-8) 0;
+  text-align: left;
+}
+
+.status-info {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.status-info:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.status-info svg {
+  flex-shrink: 0;
+  color: var(--primary-blue);
+}
+
+.status-info h3 {
+  font-size: var(--text-lg);
+  color: var(--primary-blue);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-bold);
+}
+
+.status-info p {
+  font-size: var(--text-base);
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.status-warning {
+  background: #FFF3CD;
+  border-left: 4px solid #FFC107;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-6);
+}
+
+.status-warning p {
+  margin: 0;
+  color: #856404;
+  font-size: var(--text-sm);
+}
+
+.warning-orange {
+  background: #FFF3E0;
+  border-left-color: #FFA500;
+}
+
+.warning-orange p {
+  color: #E65100;
+}
+
+.warning-red {
+  background: #FFEBEE;
+  border-left-color: #EF4444;
+}
+
+.warning-red p {
+  color: #C62828;
+}
+
+.status-actions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  margin: var(--space-8) 0;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: var(--gradient-main);
+  color: var(--white);
+  border: none;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--primary-blue);
+  border: 2px solid var(--primary-blue);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.status-note {
+  font-size: var(--text-sm);
+  color: var(--gray-500);
+  margin-top: var(--space-6);
+}
+
+.purchase-claim-form {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-top: var(--space-6);
+  text-align: left;
+}
+
+.purchase-claim-form h3 {
+  margin: 0 0 var(--space-5);
+  color: var(--primary-blue);
+}
+
+.purchase-claim-form .form-group {
+  margin-bottom: var(--space-4);
+}
+
+.purchase-claim-form label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-semibold);
+  color: var(--gray-700);
+}
+
+.purchase-claim-form input {
+  width: 100%;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: var(--text-base);
+}
+
+.purchase-claim-form input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.purchase-claim-form .password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.purchase-claim-form .password-wrapper input {
+  padding-right: 44px;
+}
+
+.purchase-claim-form .password-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.purchase-claim-form .password-toggle:hover {
+  color: var(--gray-700);
+}
+
+.purchase-claim-form .error-message {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.purchase-claim-form .claim-submit {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .payment-status-container {
+    padding: var(--space-6);
+  }
+
+  .payment-status-container h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .status-subtitle {
+    font-size: var(--text-lg);
+  }
+
+  .status-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}

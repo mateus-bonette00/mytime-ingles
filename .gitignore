@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+
+# Uploads (user content - keep directories, ignore files)
+uploads/
+backend/audios/*
+!backend/audios/.gitkeep
+
+# Temp
+*.tmp
+*.temp
+
+# Assistentes / IDEs de IA (não versionar)
+.claude/
+.codex/
+.antigravity/
+.gemini/
+.gemini-clipboard/
+.opencode/
+CLAUDE.md
+CODEX.md
+.antigravityignore
+.geminignore
+.geminiignore
+
+# Ferramentas locais / artefatos de automação
+.playwright-mcp/
+
+# Nunca enviar credenciais ou listas de senhas (repositório público)
+CredenciasMercadoPagoEdiane.txt

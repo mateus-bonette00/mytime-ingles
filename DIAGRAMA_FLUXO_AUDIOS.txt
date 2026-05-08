@@ -1,0 +1,276 @@
+================================================================================
+              DIAGRAMA DE FLUXO - SISTEMA DE ÁUDIOS
+================================================================================
+
+1. FLUXO DE CARREGAMENTO DE ÁUDIO NA PLATAFORMA
+
+   Usuário acessa /lessons/1
+            |
+            v
+   StudentDashboard.jsx (Dashboard)
+            |
+            | Clica em "INICIAR"
+            v
+   useNavigate('/lessons/1')
+            |
+            v
+   LessonPage.jsx
+            |
+            |-- useParams() extrai phraseNumber
+            |-- useRef() cria audioRef
+            |-- useState() inicializa states
+            |
+            v
+   fetchPhrase()
+            |
+            | Faz requisição GET /api/progress/phrases/1
+            |
+            v
+   Backend - progressController.getPhraseByNumber()
+            |
+            | Chama Phrase.findByNumberWithUserProgress(1, userId)
+            |
+            v
+   Backend - Phrase Model
+            |
+            | SELECT * FROM phrases WHERE phrase_number = 1
+            |
+            v
+   PostgreSQL Database
+            |
+            | Retorna:
+            | {
+            |   id: 1,
+            |   phrase_number: 1,
+            |   text_en: "Where is the bathroom?",
+            |   text_pt: "Onde fica o banheiro?",
+            |   audio_url: "/audios/1.m4a.mp4",  <-- URL DO ÁUDIO
+            |   duration_seconds: 3.5,
+            |   category: "general",
+            |   user_completed: false
+            | }
+            |
+            v
+   Backend retorna JSON
+            |
+            v
+   Frontend recebe resposta
+            |
+            | setPhrase(data.phrase)
+            |
+            v
+   LessonPage.jsx renderiza
+            |
+            | <audio
+            |   ref={audioRef}
+            |   src={phrase.audio_url}  <-- /audios/1.m4a.mp4
+            |   onTimeUpdate={handleTimeUpdate}
+            |   onLoadedMetadata={handleLoadedMetadata}
+            |   onEnded={() => setPlaying(false)}
+            | />
+            |
+            v
+   HTML5 Audio Tag faz requisição do arquivo
+            |
+            | GET /audios/1.m4a.mp4
+            |
+            v
+   Servidor estático retorna arquivo
+            |
+            v
+   Navegador carrega arquivo de áudio
+            |
+            | Dispara onLoadedMetadata
+            | --> setDuration(audioRef.current?.duration)
+            |
+            v
+   Usuário clica no botão Play
+            |
+            | handlePlayPause()
+            |
+            v
+   audioRef.current?.play()
+            |
+            v
+   HTML5 Audio reproduz arquivo
+            |
+            | Dispara onTimeUpdate a cada atualização
+            | --> setCurrentTime(audioRef.current?.currentTime)
+            |
+            v
+   Interface exibe progresso
+            |
+            | Barra de progresso avança
+            | Temporizador: "0:05 / 3:15"
+            |
+            v
+   Fim do áudio
+            |
+            | Dispara onEnded
+            | --> setPlaying(false)
+            |
+            v
+   Botão de Play volta ao estado inicial
+
+================================================================================
+
+2. ARQUITETURA DE ARMAZENAMENTO E REFERÊNCIA
+
+   ┌──────────────────────────────────────────────────────────────────┐
+   │                                                                  │
+   │  FILESYSTEM                                                     │
+   │  /home/mateus/Documentos/Projetos/mytime-ingles/audios/         │
+   │  ├── 1.m4a.mp4        (98 KB)                                   │
+   │  ├── 1b.m4a.mp4       (78 KB)                                   │
+   │  ├── 2.m4a.mp4        (112 KB)                                  │
+   │  ├── 2b.m4a.mp4       (92 KB)                                   │
+   │  ├── ... (até 25)                                               │
+   │  └── ... (até 25b)                                              │
+   │  Total: 4.9 MB                                                  │
+   │                                                                  │
+   └─────────────────┬────────────────────────────────────────────────┘
+                     │
+                     │ Servidor Express
+                     │ serve como arquivos estáticos
+                     │
+   ┌─────────────────v────────────────────────────────────────────────┐
+   │                                                                  │
+   │  DATABASE                                                        │
+   │  PostgreSQL - Tabela: phrases                                   │
+   │  ┌────────────────────────────────────────┐                     │
+   │  │ phrase_number │ text_en │ audio_url    │                     │
+   │  ├───────────────┼─────────┼──────────────┤                     │
+   │  │ 1             │ "Where" │ /audios/1..  │                     │
+   │  │ 2             │ "How"   │ /audios/2..  │                     │
+   │  │ ...           │ ...     │ ...          │                     │
+   │  │ 25            │ ...     │ /audios/25.. │                     │
+   │  └────────────────────────────────────────┘                     │
+   │                                                                  │
+   └──────────────────────────────────────────────────────────────────┘
+
+3. COMPONENTES E FUNÇÕES ENVOLVIDAS
+
+   LessonPage.jsx
+   ├── Imports
+   │   ├── useRef, useEffect, useState (React hooks)
+   │   ├── useParams, useNavigate (Router)
+   │   └── api service
+   │
+   ├── States
+   │   ├── phrase: dados da frase com audio_url
+   │   ├── playing: boolean - está reproduzindo?
+   │   ├── currentTime: número - posição atual
+   │   ├── duration: número - duração total
+   │   └── loading: boolean
+   │
+   ├── Refs
+   │   └── audioRef: referência ao elemento <audio>
+   │
+   ├── Funções
+   │   ├── fetchPhrase(): GET /api/progress/phrases/:phraseNumber
+   │   ├── handlePlayPause(): audioRef.current.play()/pause()
+   │   ├── handleTimeUpdate(): setCurrentTime() via onTimeUpdate
+   │   ├── handleLoadedMetadata(): setDuration() via onLoadedMetadata
+   │   ├── handleSeek(e): audioRef.current.currentTime = ...
+   │   ├── handleRepeat(): reinicia áudio
+   │   ├── handleNext/Previous(): navega entre frases
+   │   ├── toggleCompleted(): marca frase como estudada
+   │   └── formatTime(seconds): converte segundos em MM:SS
+   │
+   ├── JSX
+   │   ├── <audio ref={audioRef} src={phrase.audio_url} ... />
+   │   ├── <button className="play-btn"> ▶️/⏸️ </button>
+   │   ├── <div className="audio-progress" onClick={handleSeek}>
+   │   ├── <span className="audio-time"> MM:SS / MM:SS </span>
+   │   ├── <button> VOLTAR / REPETIR / PULAR </button>
+   │   └── <checkbox> Marcar como estudada </checkbox>
+   │
+   └── Eventos
+       └── onTimeUpdate, onLoadedMetadata, onEnded
+
+4. ENDPOINTS DA API
+
+   PROGRESS ENDPOINTS (Públicos, requer autenticação)
+   ├── GET /api/progress
+   │   └── Retorna: { stats, progress }
+   │
+   ├── GET /api/progress/phrases
+   │   └── Retorna: { phrases: [...] } com todos os audio_url
+   │
+   ├── GET /api/progress/phrases/:phraseNumber
+   │   └── Retorna: { phrase: { audio_url, ... } } <-- USADO NO LESSONPAGE
+   │
+   ├── POST /api/progress/phrases/:phraseNumber/complete
+   │   └── Marca frase como concluída
+   │
+   └── POST /api/progress/phrases/:phraseNumber/incomplete
+       └── Marca frase como não concluída
+
+   ADMIN ENDPOINTS (Requer autenticação + role: admin)
+   ├── POST /api/admin/phrases
+   │   └── Requer: { phrase_number, text_en, text_pt, audio_url, ... }
+   │
+   ├── PUT /api/admin/phrases/:phraseNumber
+   │   └── Pode atualizar: audio_url, text_en, text_pt, ...
+   │
+   ├── DELETE /api/admin/phrases/:phraseNumber
+   │   └── Remove frase e referência de áudio
+   │
+   └── POST /api/admin/phrases/bulk
+       └── Importa múltiplas frases com audio_url
+
+5. ESTRUTURA DE DADOS - PHRASE
+
+   Banco de Dados (PostgreSQL):
+   {
+     id: INTEGER PRIMARY KEY,
+     phrase_number: INTEGER UNIQUE (1-50),
+     text_en: VARCHAR(500),
+     text_pt: VARCHAR(500),
+     audio_url: VARCHAR(500),          <-- CAMPO CRÍTICO
+     duration_seconds: INTEGER,
+     category: VARCHAR(100),
+     created_at: TIMESTAMP,
+     updated_at: TIMESTAMP
+   }
+
+   Exemplo real:
+   {
+     id: 1,
+     phrase_number: 1,
+     text_en: "Where is the bathroom?",
+     text_pt: "Onde fica o banheiro?",
+     audio_url: "/audios/1.m4a.mp4",
+     duration_seconds: 3.5,
+     category: "general",
+     created_at: "2024-11-10T08:00:00Z",
+     updated_at: "2024-11-10T08:00:00Z"
+   }
+
+6. PADRÃO DE RESPOSTA DA API
+
+   Frontend faz:
+   GET /api/progress/phrases/1
+   Authorization: Bearer [token]
+
+   Backend retorna:
+   {
+     "phrase": {
+       "id": 1,
+       "phrase_number": 1,
+       "text_en": "Where is the bathroom?",
+       "text_pt": "Onde fica o banheiro?",
+       "audio_url": "/audios/1.m4a.mp4",  <-- USADO NO <audio src="">
+       "duration_seconds": 3,
+       "category": "general",
+       "user_completed": false,
+       "user_completed_at": null,
+       "created_at": "2024-11-10T08:00:00Z",
+       "updated_at": "2024-11-10T08:00:00Z"
+     }
+   }
+
+   Frontend então faz:
+   <audio src="/audios/1.m4a.mp4" ref={audioRef} />
+
+================================================================================
