@@ -78,11 +78,21 @@ Desktop.ini
 *.sublime-project
 *.sublime-workspace
 
+# ── Scripts de deploy / shell ─────────────────────────────────
+*.sh
+deploy.sh
+deploy*.sh
+setup*.sh
+
 # ── Temporários ───────────────────────────────────────────────
 *.tmp
 *.temp
 *.bak
 *.orig
+
+# ── Arquivos de teste soltos ───────────────────────────────────
+test-*.js
+*test-flow*
 
 # ── Assistentes de IA / Claude Code / Codex / Gemini ─────────
 .claude/
