@@ -1,56 +1,136 @@
-# Dependencies
+# ── Dependências ──────────────────────────────────────────────
 node_modules/
+.pnp/
+.pnp.js
 
-# Environment variables (NEVER commit secrets)
+# ── Variáveis de ambiente / Segredos (NUNCA commitar) ─────────
 .env
 .env.local
 .env.production
+.env.staging
 .env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
 
-# Logs
+# ── Credenciais e arquivos sensíveis ──────────────────────────
+CredenciasMercadoPagoEdiane.txt
+*credenciais*
+*Credenciais*
+*credentials*
+*secrets*
+*secret*
+*token*.txt
+*api_key*
+
+# ── Logs ──────────────────────────────────────────────────────
 logs/
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Build output
+# ── Build / Output ────────────────────────────────────────────
 dist/
 dist-ssr/
 build/
+out/
+.output/
+.next/
+.nuxt/
+.svelte-kit/
 
-# OS files
+# ── Cache ─────────────────────────────────────────────────────
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# ── Uploads / Mídia de usuário ────────────────────────────────
+uploads/
+backend/audios/*
+!backend/audios/.gitkeep
+*.wav
+*.mp3
+*.mp4
+*.mov
+*.avi
+
+# ── Sistema operacional ───────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Editor
+# ── Editor / IDE ──────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
 .idea/
 *.sw?
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
 
-# Uploads (user content - keep directories, ignore files)
-uploads/
-backend/audios/*
-!backend/audios/.gitkeep
-
-# Temp
+# ── Temporários ───────────────────────────────────────────────
 *.tmp
 *.temp
+*.bak
+*.orig
 
-# Assistentes / IDEs de IA (não versionar)
+# ── Assistentes de IA / Claude Code / Codex / Gemini ─────────
 .claude/
+.claude.json
+CLAUDE.md
+CLAUDE.local.md
 .codex/
+CODEX.md
+.opencode/
+.opencode.json
 .antigravity/
+.antigravityignore
 .gemini/
 .gemini-clipboard/
-.opencode/
-CLAUDE.md
-CODEX.md
-.antigravityignore
 .geminignore
 .geminiignore
+.cursor/
+.cursorignore
+.aider*
+.codeium/
+.continue/
+AGENTS.md
+agents.md
 
-# Ferramentas locais / artefatos de automação
+# ── Ferramentas de automação local ────────────────────────────
 .playwright-mcp/
+playwright-report/
+test-results/
 
-# Nunca enviar credenciais ou listas de senhas (repositório público)
-CredenciasMercadoPagoEdiane.txt
+# ── Documentação interna / Auditoria (não vai ao repositório) ─
+ARQUIVOS_AFETADOS_AUDIOS.md
+AUDITORIA_AUDIOS_README.md
+DIAGRAMA_FLUXO_AUDIOS.txt
+INDEX_AUDITORIA_AUDIOS.md
+RELATORIO_SISTEMA_AUDIOS.md
+RESUMO_VISUAL_AUDIOS.txt
+SUMARIO_AUDIOS.txt
+comandos-para-o-deploy.md
+GUIA_CADASTRO_SEGURO_DEPLOY.md
+GUIA_RAPIDO.md
+
+# ── Cobertura de testes ───────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Python (se houver scripts) ────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
